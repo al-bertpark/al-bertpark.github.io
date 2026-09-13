@@ -6,6 +6,11 @@
   <title>Your Name</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- MathJax renders the equations in the Results section -->
+  <script>
+    window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] } };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async></script>
   <style>
     :root {
       --navy: #2c3b70;
@@ -13,6 +18,8 @@
       --tile: #dcdcdc;
       --bg: #ffffff;
       --gap: 16px;
+      --box-line: #b8c0d9;   /* section box outline */
+      --overlay-bg: #f4f6fb; /* backdrop behind the project page */
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -86,6 +93,10 @@
       display: block;
       color: inherit;
       text-decoration: none;
+      font: inherit;
+      border: 0;
+      cursor: pointer;
+      width: 100%;
     }
 
     .tile img {
@@ -124,14 +135,253 @@
       outline-offset: 2px;
     }
 
-    /* Empty placeholder tiles (no image yet) show the caption always on hover too,
-       but have nothing behind it — that's fine, the grey shows through. */
-
     @media (prefers-reduced-motion: reduce) {
       .tile .caption { transition: none; }
     }
 
+    /* ======================================================
+       Project overlay (opens when a tile is clicked)
+       ====================================================== */
+    .project {
+      /* <dialog> reset */
+      border: 0;
+      padding: 0;
+      margin: 0;
+      max-width: none;
+      max-height: none;
+      width: 100vw;
+      height: 100dvh;
+      background: var(--overlay-bg);
+      color: var(--navy);
+      overflow-y: auto;
+    }
+
+    .project::backdrop { background: var(--overlay-bg); }
+
+    .project-page {
+      position: relative;
+      max-width: 980px;
+      margin: 32px auto 48px;
+      background: #fff;
+      border: 2px solid var(--navy);
+    }
+
+    /* Close button: the boxed "X" in the top-right corner */
+    .project-close {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 44px;
+      height: 44px;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      padding: 0;
+      display: grid;
+      place-items: center;
+    }
+
+    .project-close svg {
+      width: 40px;
+      height: 40px;
+      stroke: var(--navy);
+      stroke-width: 1.5;
+      fill: none;
+    }
+
+    .project-close:focus-visible {
+      outline: 2px solid var(--navy);
+      outline-offset: 2px;
+    }
+
+    /* Title block */
+    .project-head {
+      text-align: center;
+      padding: 44px 64px 22px;
+      border-bottom: 2px solid var(--navy);
+      color: #000;
+    }
+
+    .project-head h2 {
+      font-size: 30px;
+      font-weight: 400;
+      line-height: 1.25;
+    }
+
+    .project-head .venue {
+      margin-top: 14px;
+      font-size: 24px;
+      font-weight: 400;
+    }
+
+    .project-head .dates {
+      margin-top: 12px;
+      font-size: 16px;
+      color: #222;
+    }
+
+    .project-body { padding: 26px 36px 40px; }
+
+    /* Each section is a rounded box with its title cut into the top edge */
+    .box {
+      position: relative;
+      border: 1.5px solid var(--box-line);
+      border-radius: 8px;
+      padding: 30px 36px 26px;
+      margin-top: 30px;
+      font-size: 16px;
+      line-height: 1.4;
+      color: #222;
+    }
+
+    .box:first-child { margin-top: 0; }
+
+    .box > h3 {
+      position: absolute;
+      top: -13px;
+      left: 30px;
+      padding: 0 10px;
+      background: #fff;
+      font-size: 21px;
+      font-weight: 600;
+      color: var(--navy);
+      line-height: 1.2;
+    }
+
+    .box p + p { margin-top: 14px; }
+    .box strong { font-weight: 600; }
+
+    /* Figures */
+    .fig { text-align: center; }
+    .fig img { display: block; max-width: 100%; height: auto; }
+    .fig figcaption {
+      margin-top: 8px;
+      font-size: 13px;
+      line-height: 1.35;
+      color: #222;
+    }
+    .fig figcaption b { font-weight: 600; display: block; }
+
+    .fig-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    .fig-row.top { align-items: flex-start; }
+
+    .fig-row .arrow {
+      font-size: 34px;
+      line-height: 1;
+      color: #000;
+    }
+
+    /* Background section */
+    .bg-row { display: flex; gap: 28px; align-items: center; margin: 22px 0 26px; }
+    .bg-row .fig-row { flex: 0 0 auto; }
+    .bg-row .fig-row img { width: 194px; }
+    .bg-row .side { flex: 1 1 200px; min-width: 200px; }
+    .bg-row .side p { margin: 0; }
+    .bg-row .side small {
+      display: block;
+      margin-top: 18px;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    .bg-row .side small b { font-weight: 600; }
+
+    /* Objective section */
+    .obj-row { margin-top: 26px; gap: 40px; }
+    .obj-row img { width: 240px; }
+    .obj-row .schematic { width: 220px; }
+
+    /* Methods section */
+    .methods-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+    .methods-top .diagram { flex: 0 0 auto; }
+    .methods-top .diagram svg { display: block; }
+    .methods-top .note { flex: 1 1 260px; }
+
+    .pair {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 32px;
+      margin-top: 22px;
+      flex-wrap: wrap;
+    }
+    .pair > p { flex: 1 1 220px; margin: 0; }
+
+    .chip {
+      border: 1.5px solid var(--navy);
+      border-radius: 8px;
+      padding: 14px 26px;
+      text-align: center;
+      line-height: 1.4;
+    }
+    .chip.two {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 36px;
+      padding: 12px 20px;
+      flex: 0 1 500px;
+    }
+    .chip strong { font-weight: 600; }
+
+    /* Results section */
+    .equations {
+      display: grid;
+      grid-template-columns: repeat(3, auto);
+      justify-content: space-between;
+      gap: 6px 24px;
+      margin: 22px 0 26px;
+      font-size: 15px;
+      overflow-x: auto;
+    }
+    .equations div { line-height: 1.3; }
+
+    .sim-fig { margin: 22px auto 16px; max-width: 800px; }
+
+    /* References */
+    .refs {
+      list-style: none;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .refs li + li { margin-top: 6px; }
+    .refs a { color: inherit; }
+
+    /* Gallery */
+    .gallery {
+      display: grid;
+      grid-template-columns: 180px 300px 1fr;
+      gap: 12px;
+      align-items: center;
+    }
+    .gallery img { width: 100%; height: auto; display: block; }
+    .gallery .logo { padding: 0 24px; }
+
     /* ---------- Responsive ---------- */
+    @media (max-width: 760px) {
+      .project-page { margin: 0; border-left: 0; border-right: 0; }
+      .project-head { padding: 40px 48px 18px; }
+      .project-head h2 { font-size: 22px; }
+      .project-head .venue { font-size: 18px; }
+      .project-body { padding: 20px 16px 28px; }
+      .box { padding: 26px 18px 20px; }
+      .box > h3 { left: 14px; font-size: 18px; }
+      .bg-row { flex-direction: column; align-items: flex-start; }
+      .equations { grid-template-columns: 1fr; justify-content: start; }
+      .gallery { grid-template-columns: 1fr 1fr; }
+      .gallery .logo { grid-column: 1 / -1; padding: 12px 40px; }
+    }
+
     @media (max-width: 640px) {
       main { padding: 48px 20px 64px; }
       header { gap: 12px; }
@@ -166,6 +416,7 @@
       Each tile:  <a class="tile" href="LINK">  <img src="images/xxx.jpg" alt="...">  <span class="caption">...</span>  </a>
       - Remove the <img> line until you have a picture; the grey square stays as a placeholder.
       - Change href="#" to the project's page when you have one.
+      - To open an in-page project overlay instead, use a <button class="tile" data-project="ID"> (see tile 5).
     -->
     <section class="grid" aria-label="Projects">
 
@@ -201,13 +452,14 @@
         </span>
       </a>
 
-      <a class="tile" href="#">
-        <!-- <img src="images/project5.jpg" alt=""> -->
+      <!-- Tile 5 opens the scorpion / Mars rover project overlay below -->
+      <button class="tile" type="button" data-project="project-scorpion">
+        <!-- <img src="images/project5.jpg" alt="Vortices forming on a corrugated surface"> -->
         <span class="caption">
-          <span>Project title</span>
-          <span>Date range</span>
+          <span>Scorpion-Inspired Corrugated Surfaces for Martian Rovers</span>
+          <span>May 2023 - June 2023</span>
         </span>
-      </a>
+      </button>
 
       <a class="tile" href="#">
         <!-- <img src="images/project6.jpg" alt=""> -->
@@ -219,5 +471,194 @@
 
     </section>
   </main>
+
+  <!-- ======================================================
+       Project 5 overlay
+       Images go in images/project5/ — file names below are suggestions.
+       ====================================================== -->
+  <dialog class="project" id="project-scorpion" aria-labelledby="project-scorpion-title">
+    <article class="project-page">
+      <button class="project-close" type="button" data-close aria-label="Close project">
+        <svg viewBox="0 0 40 40" aria-hidden="true">
+          <rect x="1" y="1" width="38" height="38"/>
+          <path d="M1 1 L39 39 M39 1 L1 39"/>
+        </svg>
+      </button>
+
+      <header class="project-head">
+        <h2 id="project-scorpion-title">
+          Scorpion-Inspired Corrugated Surfaces for Martian Rovers<br>
+          to Prevent Dust Accumulation and Dust-induced Erosion
+        </h2>
+        <p class="venue">@ Unmanned Exploration Laboratory (Seoul, Korea)</p>
+        <p class="dates">May 2023 - June 2023</p>
+      </header>
+
+      <div class="project-body">
+
+        <!-- Background -->
+        <section class="box">
+          <h3>Background</h3>
+          <div class="bg-row">
+            <div class="fig-row">
+              <img src="images/project5/curiosity_clean.jpg" alt="Curiosity rover with clean surfaces">
+              <span class="arrow" aria-hidden="true">&rarr;</span>
+              <img src="images/project5/curiosity_dusty.jpg" alt="Curiosity rover covered in Martian dust">
+            </div>
+            <div class="side">
+              <p>Dust tend to accumulate on the surfaces of rovers due to the Martian winds, resulting in surface erosion and failures of sensitive equipment.</p>
+              <small><b>Curiosity Rover on Mars</b>Image courtesy of NASA, JPL, and the Planetary Society</small>
+            </div>
+          </div>
+          <p>Desert animals on earth, such as scorpions, undergo similar kinds of problem, but have been countering them by introducing <strong>grooves</strong> in their joints that create small pools of turbulent air throughout the evolution.</p>
+        </section>
+
+        <!-- Objective -->
+        <section class="box">
+          <h3>Objective</h3>
+          <p>This summer project at Unmanned Exploration Laboratory was conducted to see how such grooves and induced eddy airflow will assist in prevention of dust on Martian rovers.</p>
+          <div class="fig-row top obj-row">
+            <figure class="fig">
+              <img src="images/project5/scorpion.jpg" alt="Desert scorpion on sand, with its grooved back highlighted">
+              <figcaption><b>Picture of a Desert Scorpion</b>Image courtesy of San Diego Zoo</figcaption>
+            </figure>
+            <figure class="fig">
+              <img class="schematic" src="images/project5/scorpion_schematic.png" alt="Schematic of the corrugated grooves on a scorpion's back">
+              <figcaption><b>Schematic Drawing of the Scorpion Back</b></figcaption>
+            </figure>
+            <figure class="fig">
+              <img src="images/project5/mars_rover.jpg" alt="Mars rover with its top surface highlighted">
+              <figcaption><b>Picture of a Mars Rover</b>Image courtesy of National Geographic</figcaption>
+            </figure>
+          </div>
+        </section>
+
+        <!-- Methods -->
+        <section class="box">
+          <h3>Methods</h3>
+          <div class="methods-top">
+            <!-- Pressure diagram: flow U over a V-groove, pressures P1..P4 -->
+            <div class="diagram" aria-label="Flow over a groove, pressure increasing from P1 to P4">
+              <svg viewBox="0 0 210 170" width="210" height="170" xmlns="http://www.w3.org/2000/svg" font-family="Times New Roman, serif" font-style="italic" font-size="12">
+                <line x1="14" y1="64" x2="44" y2="34" stroke="#3b3fbf" stroke-width="1.5"/>
+                <polygon points="44,34 36,36 42,42" fill="#3b3fbf"/>
+                <text x="12" y="30" font-style="normal">U</text>
+                <polyline points="34,120 90,64 122,96 138,80 150,92 118,124 90,96 60,126" fill="none" stroke="#000" stroke-width="1.5"/>
+                <text x="94" y="58">P<tspan font-size="8" dy="3">1</tspan></text>
+                <text x="128" y="94">P<tspan font-size="8" dy="3">2</tspan></text>
+                <text x="100" y="120">P<tspan font-size="8" dy="3">3</tspan></text>
+                <text x="66" y="92">P<tspan font-size="8" dy="3">4</tspan></text>
+                <line x1="100" y1="72" x2="114" y2="86" stroke="#3b3fbf" stroke-width="1.2"/>
+                <line x1="120" y1="104" x2="110" y2="114" stroke="#3b3fbf" stroke-width="1.2"/>
+                <line x1="94" y1="112" x2="82" y2="100" stroke="#3b3fbf" stroke-width="1.2"/>
+                <text x="46" y="158">P<tspan font-size="8" dy="3">4</tspan><tspan dy="-3"> &gt; P</tspan><tspan font-size="8" dy="3">3</tspan><tspan dy="-3"> &gt; P</tspan><tspan font-size="8" dy="3">2</tspan><tspan dy="-3"> &gt; P</tspan><tspan font-size="8" dy="3">1</tspan></text>
+              </svg>
+            </div>
+
+            <!-- Groove geometry: height h, length l, origin at the centre -->
+            <div class="diagram" aria-label="Rectangular groove of height h and length l">
+              <svg viewBox="0 0 190 170" width="190" height="170" xmlns="http://www.w3.org/2000/svg" font-family="Times New Roman, serif" font-style="italic" font-size="11">
+                <line x1="40" y1="24" x2="112" y2="24" stroke="#3b3fbf" stroke-width="1.5"/>
+                <polygon points="112,24 104,20 104,28" fill="#3b3fbf"/>
+                <text x="70" y="16" font-style="normal">U</text>
+                <polyline points="30,58 66,58 66,128 118,128 118,58 154,58" fill="none" stroke="#000" stroke-width="1.5"/>
+                <line x1="30" y1="93" x2="154" y2="93" stroke="#3b3fbf" stroke-width="1" stroke-dasharray="3 3"/>
+                <line x1="92" y1="46" x2="92" y2="140" stroke="#3b3fbf" stroke-width="1" stroke-dasharray="3 3"/>
+                <text x="18" y="97" font-style="normal">0</text>
+                <text x="88" y="156" font-style="normal">0</text>
+                <text x="4" y="62">-½h</text>
+                <text x="158" y="62">½h</text>
+                <text x="52" y="152">-½l</text>
+                <text x="120" y="152">½l</text>
+              </svg>
+            </div>
+
+            <p class="note">We know that from Zhiwu et al. [1] a vortex will form due to an external flow right above the grooves of the surface, on Earth.</p>
+          </div>
+
+          <p style="margin-top:22px">To find out whether such grooves are also applicable to Martian rovers, we thus need to examine how <strong>strong these vortices would be on Mars.</strong></p>
+
+          <div class="pair">
+            <p>That is, we need to calculate the unknown magnitudes of:</p>
+            <div class="chip">velocity <strong>u</strong> and <strong>w</strong></div>
+          </div>
+
+          <div class="pair">
+            <p>governed by both geometric and environmental factors:</p>
+            <div class="chip two">
+              <div>external flow velocity (<strong>U</strong>)<br>groove height (<strong>h</strong>)<br>groove length (<strong>l</strong>)</div>
+              <div>gravitational constant (<strong>g</strong>)<br>viscosity (<strong>&mu;</strong>)<br>density (<strong>&rho;</strong>)</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Results -->
+        <section class="box">
+          <h3>Results</h3>
+          <p>Going through series of calculations involve the continuity equation, the Navier-Stokes equations, and a preassumed velocity shape of w, giving out the following amplitude:</p>
+
+          <div class="equations">
+            <div>\( w(x,z) = \alpha \sin\!\left(\dfrac{2\pi}{l}x\right)\cos^2\!\left(\dfrac{\pi}{h}z\right) \)</div>
+            <div>\( -\dfrac{\partial p'}{\partial x} + \mu\left(\dfrac{\partial^2 u}{\partial x^2} + \dfrac{\partial^2 u}{\partial z^2}\right) = \rho\left(u\dfrac{\partial u}{\partial x} + w\dfrac{\partial u}{\partial z}\right) \)</div>
+            <div>\( \alpha = -\dfrac{5U\,l^2 h}{2\pi^2\,(h^2+l^2)\,(h+l)} \)</div>
+            <div>\( \dfrac{\partial u}{\partial x} + \dfrac{\partial w}{\partial z} = 0 \)</div>
+            <div>\( -\dfrac{\partial p'}{\partial z} + \mu\left(\dfrac{\partial^2 w}{\partial x^2} + \dfrac{\partial^2 w}{\partial z^2}\right) = \rho\left(u\dfrac{\partial w}{\partial x} + w\dfrac{\partial w}{\partial z}\right) \)</div>
+            <div>\( \alpha = -\dfrac{5}{8\pi^2}U \qquad (l = h = r) \)</div>
+          </div>
+
+          <p>The following is a simulated formation of vortices on the corrugated surface, with values r = 5mm, U = 6m/s, and Martian values for density and viscosity.</p>
+
+          <figure class="fig sim-fig">
+            <img src="images/project5/ansys_streamlines.png" alt="Ansys velocity streamline plot showing vortices forming in each groove of the corrugated surface">
+            <figcaption><b>Vortices Forming in Martian Condition</b>Research only, Non-commercial</figcaption>
+          </figure>
+
+          <p>The vortices clearly form in the picture, with amplitude values around 0.5m/s, which closely matches the derived value from the equation, 0.36 m/s.</p>
+          <p>This result shows that these corrugated surfaces can be applied to Martian rovers to reduce dust accumulation and erosion, preventing equipment malfunction and increasing durability.</p>
+        </section>
+
+        <!-- References -->
+        <section class="box">
+          <h3>References</h3>
+          <ol class="refs">
+            <li>[1] Zhiwu, H., Junqiu, Z., Chao, G., Li, W., &amp; Ren, L. (2012). Erosion resistance of bionic functional surfaces inspired from Desert Scorpions. Langmuir, 28(5), 2914–2921. <a href="https://doi.org/10.1021/la203942r" target="_blank" rel="noopener">https://doi.org/10.1021/la203942r</a></li>
+            <li>[2] White, F. M. (2016). Fluid mechanics. McGraw-Hill.</li>
+            <li>[3] Williams, D. R. (2023). Mars fact sheet. NASA. https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html</li>
+          </ol>
+        </section>
+
+        <!-- Gallery -->
+        <section class="box">
+          <h3>Gallery</h3>
+          <div class="gallery">
+            <img src="images/project5/gallery_poster.jpg" alt="Printed research poster pinned to a wall">
+            <img src="images/project5/gallery_rover.jpg" alt="Rover prototype on a simulated Martian terrain">
+            <img class="logo" src="images/project5/uel_logo.png" alt="Unmanned Exploration Laboratory logo">
+          </div>
+        </section>
+
+      </div>
+    </article>
+  </dialog>
+
+  <script>
+    // Open a project overlay from any tile with data-project="<dialog id>"
+    document.querySelectorAll('[data-project]').forEach(tile => {
+      tile.addEventListener('click', () => {
+        const dlg = document.getElementById(tile.dataset.project);
+        if (!dlg) return;
+        dlg.showModal();
+        dlg.scrollTop = 0;
+        document.body.style.overflow = 'hidden';
+      });
+    });
+
+    document.querySelectorAll('dialog.project').forEach(dlg => {
+      dlg.querySelector('[data-close]').addEventListener('click', () => dlg.close());
+      // Clicking the grey backdrop (outside the white page) also closes it
+      dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+      dlg.addEventListener('close', () => { document.body.style.overflow = ''; });
+    });
+  </script>
 </body>
 </html>
